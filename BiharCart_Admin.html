@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiharCart - Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #E65100 0%, #FF6B1A 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* LOGIN SCREEN */
+        .login-screen {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; position: fixed; top: 0; left: 0;
+            width: 100%; background: linear-gradient(135deg, #E65100 0%, #FF6B1A 100%);
+            z-index: 999;
+        }
+        .login-box {
+            background: white; padding: 50px 40px; border-radius: 20px;
+            width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .login-logo { font-size: 48px; margin-bottom: 10px; }
+        .login-title { font-size: 28px; font-weight: 900; color: #E65100; margin-bottom: 5px; }
+        .login-subtitle { color: #999; font-size: 14px; margin-bottom: 30px; }
+        .login-input {
+            width: 100%; padding: 15px; border: 2px solid #EEE;
+            border-radius: 10px; font-size: 16px; margin-bottom: 15px;
+            text-align: center; letter-spacing: 3px;
+        }
+        .login-input:focus { outline: none; border-color: #FF6B1A; }
+        .login-btn {
+            width: 100%; padding: 15px; background: #FF6B1A; color: white;
+            border: none; border-radius: 10px; font-size: 18px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .login-btn:hover { background: #E65100; transform: translateY(-2px); }
+        .login-error { color: #D32F2F; font-size: 14px; margin-top: 10px; display: none; }
+
+        /* MAIN PANEL */
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: white; padding: 20px 25px; border-radius: 15px;
+            margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo { font-size: 36px; }
+        .header-title { font-size: 28px; font-weight: 900; color: #E65100; }
+        .header-subtitle { color: #999; font-size: 13px; }
+        .tabs { display: flex; gap: 10px; }
+        .tab-btn {
+            padding: 12px 24px; border: none; background: #F0F0F0; color: #666;
+            border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 15px; transition: all 0.3s;
+        }
+        .tab-btn.active { background: #FF6B1A; color: white; }
+        .tab-btn:hover { transform: translateY(-2px); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .card {
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            color: #E65100; font-size: 20px; margin-bottom: 20px;
+            border-bottom: 3px solid #FF6B1A; padding-bottom: 10px;
+        }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; color: #333; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%; padding: 12px; border: 2px solid #E5E5E5;
+            border-radius: 8px; font-size: 14px; transition: all 0.3s; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #FF6B1A; }
+        textarea { resize: vertical; min-height: 80px; }
+
+        /* IMAGE UPLOAD */
+        .image-upload {
+            border: 3px dashed #DDD; border-radius: 12px; padding: 30px;
+            text-align: center; cursor: pointer; transition: all 0.3s; background: #FAFAFA;
+        }
+        .image-upload:hover { border-color: #FF6B1A; background: #FFF5EE; }
+        .image-upload.has-image { padding: 0; border: 2px solid #FF6B1A; border-radius: 12px; overflow: hidden; }
+        #imagePreview { max-width: 100%; max-height: 200px; display: none; object-fit: contain; }
+        .upload-icon { font-size: 40px; margin-bottom: 8px; }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+
+        .btn {
+            padding: 14px 30px; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.3s; width: 100%; font-family: inherit;
+        }
+        .btn-primary { background: #FF6B1A; color: white; }
+        .btn-primary:hover { background: #E65100; transform: translateY(-2px); }
+        .btn-primary:disabled { background: #CCC; cursor: not-allowed; transform: none; }
+
+        /* STATUS */
+        .status {
+            padding: 12px 15px; border-radius: 8px; margin-bottom: 15px;
+            display: none; font-weight: 600; font-size: 14px;
+        }
+        .status.success { background: #E8F5E9; color: #2E7D32; border: 2px solid #2E7D32; }
+        .status.error { background: #FFEBEE; color: #D32F2F; border: 2px solid #D32F2F; }
+
+        /* PRODUCTS LIST */
+        .products-list { max-height: 650px; overflow-y: auto; }
+        .product-item {
+            display: flex; gap: 12px; padding: 12px; border: 2px solid #F0F0F0;
+            border-radius: 10px; margin-bottom: 12px; align-items: center; transition: all 0.3s;
+        }
+        .product-item:hover { border-color: #FF6B1A; }
+        .product-img {
+            width: 70px; height: 70px; object-fit: contain;
+            border-radius: 8px; background: #FAFAFA; padding: 4px; flex-shrink: 0;
+        }
+        .product-info { flex: 1; min-width: 0; }
+        .product-name { font-weight: 700; color: #333; font-size: 14px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-cat { color: #FF6B1A; font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+        .product-meta { color: #999; font-size: 12px; }
+        .product-price { font-weight: 800; color: #E65100; font-size: 15px; }
+        .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-delete { background: #FFEBEE; color: #D32F2F; }
+        .btn-delete:hover { background: #D32F2F; color: white; }
+        .loading { text-align: center; padding: 30px; color: #999; font-size: 15px; }
+
+        /* ORDERS */
+        .orders-list { max-height: 700px; overflow-y: auto; }
+        .order-card {
+            border: 2px solid #F0F0F0; border-radius: 12px;
+            padding: 20px; margin-bottom: 20px; background: #FAFAFA;
+            transition: all 0.3s;
+        }
+        .order-card:hover { border-color: #FF6B1A; }
+        .order-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #EEE;
+        }
+        .order-id { font-size: 18px; font-weight: 800; color: #E65100; }
+        .order-date { font-size: 12px; color: #999; margin-top: 3px; }
+        .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .status-pending { background: #FFF3E0; color: #FF8C00; }
+        .status-confirmed { background: #E3F2FD; color: #1976D2; }
+        .status-delivered { background: #E8F5E9; color: #2E7D32; }
+        .status-cancelled { background: #FFEBEE; color: #D32F2F; }
+        .status-out-for-delivery { background: #EDE7F6; color: #6A1B9A; }
+        .order-customer { margin-bottom: 12px; padding: 12px; background: white; border-radius: 8px; }
+        .customer-name { font-weight: 700; color: #333; margin-bottom: 4px; }
+        .customer-phone { color: #FF6B1A; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .customer-address { color: #666; font-size: 13px; line-height: 1.5; }
+        .order-item {
+            display: flex; justify-content: space-between;
+            padding: 8px 12px; background: white; border-radius: 6px; margin-bottom: 6px;
+        }
+        .item-name { font-weight: 600; color: #333; font-size: 14px; }
+        .item-qty { color: #999; font-size: 12px; }
+        .item-price { font-weight: 700; color: #E65100; }
+        .order-total {
+            display: flex; justify-content: space-between;
+            padding: 12px; background: #E65100; color: white;
+            border-radius: 8px; margin: 12px 0;
+        }
+        .total-label { font-weight: 600; font-size: 14px; }
+        .total-value { font-size: 20px; font-weight: 900; }
+        .status-update { display: flex; gap: 10px; align-items: center; }
+        .status-select {
+            flex: 1; padding: 10px; border: 2px solid #E5E5E5;
+            border-radius: 8px; font-weight: 600; font-family: inherit;
+        }
+        .btn-update {
+            padding: 10px 20px; background: #FF6B1A; color: white;
+            border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-family: inherit;
+        }
+        .btn-update:hover { background: #E65100; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card {
+            background: white; padding: 20px; border-radius: 12px;
+            text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .stat-icon { font-size: 30px; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 900; color: #E65100; }
+        .stat-label { color: #999; font-size: 13px; margin-top: 3px; }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .tabs { flex-wrap: wrap; }
+            .two-col, .three-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-box">
+        <div class="login-logo">🛒</div>
+        <div class="login-title">BiharCart</div>
+        <div class="login-subtitle">Admin Panel — Enter password to continue</div>
+        <input type="password" class="login-input" id="passwordInput" placeholder="••••••••" onkeypress="if(event.key==='Enter') checkPassword()">
+        <button class="login-btn" onclick="checkPassword()">🔐 Login</button>
+        <div class="login-error" id="loginError">❌ Wrong password! Try again.</div>
+    </div>
+</div>
+
+<!-- MAIN PANEL -->
+<div class="container" id="mainPanel" style="display:none;">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="totalProducts">0</div>
+            <div class="stat-label">Total Products</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="totalOrders">0</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value" id="pendingOrders">0</div>
+            <div class="stat-label">Pending Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="deliveredOrders">0</div>
+            <div class="stat-label">Delivered</div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo">🛒</div>
+            <div>
+                <div class="header-title">Bihar<span style="color:#333;">Cart</span> Admin</div>
+                <div class="header-subtitle">Bihar ka apna store ✨ — Manage your products & orders</div>
+            </div>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('products')">📦 Products</button>
+            <button class="tab-btn" onclick="switchTab('orders')">📋 Orders</button>
+        </div>
+    </div>
+
+    <!-- PRODUCTS TAB -->
+    <div id="productsTab" class="tab-content active">
+        <div class="main-grid">
+
+            <!-- ADD PRODUCT FORM -->
+            <div class="card">
+                <h2>➕ Add New Product</h2>
+                <div id="statusMessage" class="status"></div>
+
+                <div class="form-group">
+                    <label>Product Image *</label>
+                    <div class="image-upload" id="imageUploadArea" onclick="document.getElementById('imageInput').click()">
+                        <div id="uploadPlaceholder">
+                            <div class="upload-icon">📷</div>
+                            <p style="color:#666;font-weight:600;">Click to select image</p>
+                            <p style="color:#999;font-size:12px;margin-top:4px;">JPG, PNG (max 2MB)</p>
+                        </div>
+                        <img id="imagePreview" alt="Preview">
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" style="display:none;">
+                </div>
+
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" id="productName" placeholder="e.g., Amul Full Cream Milk">
+                </div>
+
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select id="productCategory">
+                        <option value="">Select Category</option>
+                        <option value="Dairy">🥛 Dairy</option>
+                        <option value="Fruits">🥭 Fruits</option>
+                        <option value="Kirana">🛒 Kirana</option>
+                        <option value="Snacks">🍿 Snacks</option>
+                        <option value="Beverages">🥤 Beverages</option>
+                        <option value="Personal Care">🧴 Personal Care</option>
+                    </select>
+                </div>
+
+                <div class="two-col">
+                    <div class="form-group">
+                        <label>MRP (₹) *</label>
+                        <input type="number" id="productMRP" placeholder="120" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Selling Price (₹) *</label>
+                        <input type="number" id="productPrice" placeholder="99" min="1">
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="form-group">
+                        <label>Unit *</label>
+                        <select id="productUnit">
+                            <option value="">Select Unit</option>
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="litre">litre</option>
+                            <option value="ml">ml</option>
+                            <option value="piece">piece</option>
+                            <option value="packet">packet</option>
+                            <option value="dozen">dozen</option>
+                            <option value="box">box</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Quantity *</label>
+                        <input type="number" id="productStock" placeholder="50" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="productDescription" placeholder="Short description of the product..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" id="submitBtn" onclick="submitProduct()">💾 Save Product</button>
+            </div>
+
+            <!-- PRODUCTS LIST -->
+            <div class="card">
+                <h2>📦 All Products</h2>
+                <div id="productsList" class="products-list">
+                    <div class="loading">⏳ Loading products...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div id="ordersTab" class="tab-content">
+        <div class="card">
+            <h2>📋 Customer Orders</h2>
+            <div id="ordersList" class="orders-list">
+                <div class="loading">⏳ Loading orders...</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAT75okx97ITXatLHG7xelFLsJxSEhM9VU",
+        authDomain: "biharcart-4ed92.firebaseapp.com",
+        projectId: "biharcart-4ed92",
+        storageBucket: "biharcart-4ed92.firebasestorage.app",
+        messagingSenderId: "905565752205",
+        appId: "1:905565752205:web:002e8cfe8a3839ef91cbc4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let selectedImageBase64 = null;
+
+    // PASSWORD CHECK
+    window.checkPassword = function() {
+        const pwd = document.getElementById('passwordInput').value;
+        if (pwd === 'bihar123') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'block';
+            loadProducts();
+            loadStats();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+        }
+    };
+
+    // TAB SWITCHING
+    window.switchTab = function(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        if (tab === 'products') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('productsTab').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('ordersTab').classList.add('active');
+            loadOrders();
+        }
+    };
+
+    // IMAGE SELECTION — converts to base64
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            showStatus('❌ Image too large! Max 2MB', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedImageBase64 = e.target.result;
+            document.getElementById('imagePreview').src = selectedImageBase64;
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('uploadPlaceholder').style.display = 'none';
+            document.getElementById('imageUploadArea').classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // SUBMIT PRODUCT
+    window.submitProduct = async function() {
+        const name        = document.getElementById('productName').value.trim();
+        const category    = document.getElementById('productCategory').value;
+        const mrp         = document.getElementById('productMRP').value;
+        const price       = document.getElementById('productPrice').value;
+        const unit        = document.getElementById('productUnit').value;
+        const stock       = document.getElementById('productStock').value;
+        const description = document.getElementById('productDescription').value.trim();
+
+        if (!selectedImageBase64) { showStatus('❌ Please select a product image!', 'error'); return; }
+        if (!name)     { showStatus('❌ Please enter product name!', 'error'); return; }
+        if (!category) { showStatus('❌ Please select a category!', 'error'); return; }
+        if (!mrp)      { showStatus('❌ Please enter MRP!', 'error'); return; }
+        if (!price)    { showStatus('❌ Please enter selling price!', 'error'); return; }
+        if (!unit)     { showStatus('❌ Please select unit!', 'error'); return; }
+        if (!stock)    { showStatus('❌ Please enter stock!', 'error'); return; }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Saving...';
+
+        try {
+            const productData = {
+                name, category,
+                mrp: parseInt(mrp),
+                price: parseInt(price),
+                unit, stock: parseInt(stock),
+                description,
+                imageBase64: selectedImageBase64,
+                createdAt: serverTimestamp()
+            };
+
+            await addDoc(collection(db, 'products'), productData);
+            showStatus('✅ Product added successfully!', 'success');
+            resetForm();
+            loadProducts();
+            loadStats();
+        } catch (err) {
+            console.error(err);
+            showStatus('❌ Error: ' + err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Save Product';
+        }
+    };
+
+    function resetForm() {
+        ['productName','productMRP','productPrice','productStock','productDescription'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('productCategory').value = '';
+        document.getElementById('productUnit').value = '';
+        document.getElementById('imageInput').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('uploadPlaceholder').style.display = 'block';
+        document.getElementById('imageUploadArea').classList.remove('has-image');
+        selectedImageBase64 = null;
+    }
+
+    // LOAD PRODUCTS
+    async function loadProducts() {
+        const list = document.getElementById('productsList');
+        list.innerHTML = '<div class="loading">⏳ Loading...</div>';
+        try {
+            const snap = await getDocs(collection(db, 'products'));
+            if (snap.empty) {
+                list.innerHTML = '<div class="loading">No products yet. Add your first product! 🎉</div>';
+                return;
+            }
+            let html = '';
+            snap.forEach(d => {
+                const p = d.data();
+                const discount = p.mrp > p.price ? Math.round((p.mrp - p.price) / p.mrp * 100) : 0;
+                html += `<div class="product-item">
+                    <img src="${p.imageBase64}" class="product-img" alt="${p.name}">
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-cat">${p.category} · ${p.unit}</div>
+                        <div class="product-meta">Stock: ${p.stock} · ${discount > 0 ? discount + '% OFF' : 'No discount'}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="product-price">₹${p.price}</div>
+                        ${p.mrp > p.price ? `<div style="color:#999;font-size:11px;text-decoration:line-through;">₹${p.mrp}</div>` : ''}
+                        <button class="btn-sm btn-delete" style="margin-top:8px;" onclick="deleteProduct('${d.id}')">🗑️</button>
+                    </div>
+                </div>`;
+            });
+            list.innerHTML = html;
+        } catch (err) {
+            list.innerHTML = `<div class="loading" style="color:red;">❌ Error: ${err.message}</div>`;
+        }
+    }
+
+    // DELETE PRODUCT
+    window.deleteProduct = async function(docId) {
+        if (!confirm('Delete this product?')) return;
+        try {
+            await deleteDoc(doc(db, 'products', docId));
+            showStatus('✅ Product deleted!', 'success');
+            loadProducts();
+            loadStats();
+        } catch (err) {
+            showStatus('❌ Error: ' + err.message, 'error');
+        }
+    };
+
+    // LOAD ORDERS
+    async function loadOrders() {
+        const list = document.getElementById('ordersList');
+        list.innerHTML = '<div class="loading">⏳ Loading orders...</div>';
+        try {
+            const snap = await getDocs(collection(db, 'orders'));
+            if (snap.empty) {
+                list.innerHTML = '<div class="loading">No orders yet. Orders will appear here when customers place them! 🛒</div>';
+                return;
+            }
+            const orders = [];
+            snap.forEach(d => orders.push({ id: d.id, ...d.data() }));
+            orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+            let html = '';
+            orders.forEach(order => {
+                const sc = (order.orderStatus || 'pending').toLowerCase().replace(/\s+/g, '-');
+                const date = order.orderDate ? new Date(order.orderDate).toLocaleString('en-IN') : 'N/A';
+                const items = Array.isArray(order.items) ? order.items : [];
+                html += `<div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #${order.id.substring(0,8).toUpperCase()}</div>
+                            <div class="order-date">🕐 ${date}</div>
+                        </div>
+                        <div class="status-badge status-${sc}">${order.orderStatus || 'Pending'}</div>
+                    </div>
+                    <div class="order-customer">
+                        <div class="customer-name">👤 ${order.userName || 'N/A'}</div>
+                        <div class="customer-phone">📱 ${order.userPhone || 'N/A'}</div>
+                        <div class="customer-address">📍 ${order.deliveryAddress || 'N/A'}</div>
+                    </div>
+                    <div class="order-items">
+                        ${items.map(item => `<div class="order-item">
+                            <div>
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-qty">Qty: ${item.quantity} × ₹${item.price}</div>
+                            </div>
+                            <div class="item-price">₹${item.price * item.quantity}</div>
+                        </div>`).join('')}
+                    </div>
+                    <div class="order-total">
+                        <div class="total-label">Total Amount</div>
+                        <div class="total-value">₹${order.total || 0}</div>
+                    </div>
+                    <div class="status-update">
+                        <select class="status-select" id="status_${order.id}">
+                            <option value="Pending" ${order.orderStatus==='Pending'?'selected':''}>⏳ Pending</option>
+                            <option value="Confirmed" ${order.orderStatus==='Confirmed'?'selected':''}>✅ Confirmed</option>
+                            <option value="Out for Delivery" ${order.orderStatus==='Out for Delivery'?'selected':''}>🚴 Out for Delivery</option>
+                            <option value="Delivered" ${order.orderStatus==='Delivered'?'selected':''}>🎉 Delivered</option>
+                            <option value="Cancelled" ${order.orderStatus==='Cancelled'?'selected':''}>❌ Cancelled</option>
+                        </select>
+                        <button class="btn-update" onclick="updateOrderStatus('${order.id}')">Update</button>
+                    </div>
+                </div>`;
+            });
+            list.innerHTML = html;
+        } catch (err) {
+            list.innerHTML = `<div class="loading" style="color:red;">❌ Error: ${err.message}</div>`;
+        }
+    }
+
+    // UPDATE ORDER STATUS
+    window.updateOrderStatus = async function(orderId) {
+        const newStatus = document.getElementById('status_' + orderId).value;
+        try {
+            await updateDoc(doc(db, 'orders', orderId), { orderStatus: newStatus });
+            alert('✅ Status updated to: ' + newStatus);
+            loadOrders();
+            loadStats();
+        } catch (err) {
+            alert('❌ Error: ' + err.message);
+        }
+    };
+
+    // LOAD STATS
+    async function loadStats() {
+        try {
+            const productsSnap = await getDocs(collection(db, 'products'));
+            document.getElementById('totalProducts').textContent = productsSnap.size;
+
+            const ordersSnap = await getDocs(collection(db, 'orders'));
+            document.getElementById('totalOrders').textContent = ordersSnap.size;
+
+            let pending = 0, delivered = 0;
+            ordersSnap.forEach(d => {
+                const status = d.data().orderStatus || 'Pending';
+                if (status === 'Pending') pending++;
+                if (status === 'Delivered') delivered++;
+            });
+            document.getElementById('pendingOrders').textContent = pending;
+            document.getElementById('deliveredOrders').textContent = delivered;
+        } catch (err) {
+            console.error('Stats error:', err);
+        }
+    }
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMessage');
+        el.textContent = msg;
+        el.className = 'status ' + type;
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+</script>
+</body>
+</html>
